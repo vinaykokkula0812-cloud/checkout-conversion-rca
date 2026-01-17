@@ -21,6 +21,7 @@ SELECT
     ROUND(SUM(purchase) * 100.0 / NULLIF(SUM(checkout), 0), 2) AS checkout_to_purchase_pct
 FROM user_funnel;
 
+
 ------------------------------------------------------------------------------------------------------
 -- 2.DEVICE BREAKDOWN
 -- Checkout → Purchase conversion by device
@@ -41,25 +42,26 @@ SELECT
 FROM device_funnel
 GROUP BY device;
 
+
 -----------------------------------------------------------------------------------------------------------
 -- 3. PAYMENT FAILURE QUERY
-
 -- Payment failure events over time
 SELECT
-    DATE(event_time) AS event_date,
+    CAST(event_time AS DATE) AS event_date,
     COUNT(*) AS payment_failures
 FROM events
 WHERE event_name = 'payment_failed'
-GROUP BY DATE(event_time)
+GROUP BY CAST(event_time AS DATE)
 ORDER BY event_date;
+
 
 -------------------------------------------------------------------------------------------------------------
 -- 4. PAYMENT FAILURE RATE
-
 -- Payment failure rate per device
 SELECT
     device,
     COUNT(CASE WHEN event_name = 'payment_failed' THEN 1 END) * 1.0
-    / COUNT(CASE WHEN event_name = 'checkout' THEN 1 END) AS payment_failure_rate
+    / NULLIF(COUNT(CASE WHEN event_name = 'checkout' THEN 1 END), 0) AS payment_failure_rate
 FROM events
 GROUP BY device;
+
